@@ -1030,3 +1030,6 @@ ggarrange(S16aucGraph, S16aucStatsGraph,
 
 rm(list=ls())
 dev.off()
+
+sessionInfo()
+writeLines(capture.output(sessionInfo()), "sessionInfo.txt")
