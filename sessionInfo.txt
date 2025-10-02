@@ -50,8 +50,8 @@ loaded via a namespace (and not attached):
  [76] R6_2.6.1                    colorspace_2.1-1            tidyr_1.3.1                
  [79] generics_0.1.4              data.table_1.17.8           class_7.3-23               
  [82] graphlayouts_1.2.2          httr_1.4.7                  S4Arrays_1.8.1             
- [85] parameters_0.26.0           pkgconfig_2.0.3             Exact_3.3                  
- [88] gtable_0.3.6                Rmpfr_1.1-0                 statsExpressions_1.7.0     
+ [85] parameters_0.26.0           pkgconfig_2.0.3             gtable_0.3.6               
+ [88] Exact_3.3                   Rmpfr_1.1-0                 statsExpressions_1.7.0     
  [91] XVector_0.48.0              carData_3.0-5               biomformat_1.36.0          
  [94] multcompView_0.1-10         scales_1.4.0                Biobase_2.68.0             
  [97] lmom_3.2                    rstudioapi_0.17.1           tzdb_0.5.0                 
@@ -59,15 +59,15 @@ loaded via a namespace (and not attached):
 [103] zoo_1.8-14                  rhdf5_2.52.1                stringr_1.5.1              
 [106] rootSolve_1.8.2.4           KernSmooth_2.23-26          parallel_4.5.0             
 [109] pillar_1.11.0               grid_4.5.0                  vctrs_0.6.5                
-[112] car_3.1-3                   dunn.test_1.3.6             paletteer_1.6.0            
-[115] readr_2.1.5                 zeallot_0.2.0               mvtnorm_1.3-3              
-[118] cli_3.6.5                   locfit_1.5-9.12             compiler_4.5.0             
-[121] rlang_1.1.6                 crayon_1.5.3                rstantools_2.4.0           
-[124] ggsignif_0.6.4              labeling_0.4.3              classInt_0.4-11            
-[127] rematch2_2.1.2              fs_1.6.6                    forcats_1.0.0              
-[130] plyr_1.8.9                  stringi_1.8.7               viridisLite_0.4.2          
-[133] BiocParallel_1.42.1         Biostrings_2.76.0           bayestestR_0.16.0          
-[136] Matrix_1.7-3                hms_1.1.3                   patchwork_1.3.1            
-[139] gss_2.2-9                   Rhdf5lib_1.30.0             haven_2.5.5                
-[142] SummarizedExperiment_1.38.1 broom_1.0.8                 memoise_2.0.1              
-[145] RcppParallel_5.1.10         ape_5.8-1                  
+[112] car_3.1-3                   paletteer_1.6.0             readr_2.1.5                
+[115] zeallot_0.2.0               mvtnorm_1.3-3               cli_3.6.5                  
+[118] locfit_1.5-9.12             compiler_4.5.0              rlang_1.1.6                
+[121] crayon_1.5.3                rstantools_2.4.0            ggsignif_0.6.4             
+[124] labeling_0.4.3              classInt_0.4-11             rematch2_2.1.2             
+[127] fs_1.6.6                    forcats_1.0.0               plyr_1.8.9                 
+[130] stringi_1.8.7               viridisLite_0.4.2           BiocParallel_1.42.1        
+[133] Biostrings_2.76.0           bayestestR_0.16.0           Matrix_1.7-3               
+[136] hms_1.1.3                   patchwork_1.3.1             gss_2.2-9                  
+[139] Rhdf5lib_1.30.0             haven_2.5.5                 SummarizedExperiment_1.38.1
+[142] broom_1.0.8                 memoise_2.0.1               RcppParallel_5.1.10        
+[145] ape_5.8-1                  

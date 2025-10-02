@@ -32,7 +32,7 @@ rm(list=ls())
 ps16sOTU <- readRDS("16S.OTU.RDS")
 x <- as(otu_table(ps16sOTU), "matrix")
 x <- x+1
-deseqOTU <- MetaLonDA::normalize(x, method = "median_ratio")
+deseqOTU <- normalize(x, method = "median_ratio")
 deseqOTU <- floor(deseqOTU)
 ps16sOTU.deseq <- phyloseq(otu_table(as.matrix(deseqOTU), taxa_are_rows=FALSE), 
                            ps16sOTU@sam_data, 
@@ -72,43 +72,26 @@ psITSOTU.deseq <- phyloseq(otu_table(as.matrix(deseqOTU), taxa_are_rows=FALSE),
 saveRDS(psITSOTU.deseq, "ITS.OTU.DESeq.RDS")
 rm(list=ls())
 
+#Convert and write phyloseq object to long .tsv
+ps16s.deseq <- readRDS("16S.OTU.DESeq.RDS")
+write.table(psmelt(ps16s.deseq), "16S.OTU.DESeq.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+psITS.deseq <- readRDS("ITS.OTU.DESeq.RDS")
+write.table(psmelt(psITS.deseq), "ITS.OTU.DESeq.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+rm(list=ls())
+
 #16S Alpha Diversity
 ps16s.deseq <- readRDS("16S.OTU.DESeq.RDS")
 alpha16s <- estimate_richness(ps16s.deseq, measures = c("Observed", "ACE", "Shannon", 
                                                         "Simpson"))
 metalpha16s <- cbind(ps16s.deseq@sam_data, alpha16s)
 
-richness.test <- kruskal.test(metalpha16s$Observed~metalpha16s$TreatmentAll)
-summary(aov(metalpha16s$Observed~metalpha16s$TreatmentAll))
-shannon.test <- kruskal.test(metalpha16s$Shannon~metalpha16s$TreatmentAll)
-summary(aov(metalpha16s$Shannon~metalpha16s$TreatmentAll))
-simpson.test <- kruskal.test(metalpha16s$Simpson~metalpha16s$TreatmentAll)
-summary(aov(metalpha16s$Simpson~metalpha16s$TreatmentAll))
-ace1.test <- kruskal.test(metalpha16s$ACE~metalpha16s$TreatmentAll)
-summary(aov(metalpha16s$ACE~metalpha16s$TreatmentAll))
-pvalues <- matrix(NA, nrow=4, ncol=2)
-colnames(pvalues) <- c("Indice", "pvalue")
-pvalues[1,1] <- "richness"
-pvalues[1,2] <- richness.test$p.value
-pvalues[2,1] <- "shannon"
-pvalues[2,2] <- shannon.test$p.value
-pvalues[3,1] <- "simpson"
-pvalues[3,2] <- simpson.test$p.value
-pvalues[4,1] <- "ace1"
-pvalues[4,2] <- ace1.test$p.value
-padjust <- p.adjust(as.numeric(pvalues[,"pvalue"]), method="BH")
-pvalues <- cbind(pvalues, padjust)
-pvalues
-
-dunnTest(metalpha16s$Observed~metalpha16s$TreatmentAll, method = "bh")
-boxplot(metalpha16s$Observed~metalpha16s$TreatmentAl)
-dunnTest(metalpha16s$ACE~metalpha16s$TreatmentAll, method = "bh")
-boxplot(metalpha16s$ACE~metalpha16s$TreatmentAl)
-dunnTest(metalpha16s$Shannon~metalpha16s$TreatmentAll, method = "bh")
-boxplot(metalpha16s$Shannon~metalpha16s$TreatmentAl)
-dunnTest(metalpha16s$Simpson~metalpha16s$TreatmentAll, method = "bh")
-boxplot(metalpha16s$Simpson~metalpha16s$TreatmentAl)
-
+#Figure1
+a.stats <- extract_stats(ggbetweenstats(
+  data = metalpha16s,
+  x = TreatmentAll,
+  y = Observed,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 a <- ggbetweenstats(
   data = metalpha16s,
   x = TreatmentAll,
@@ -118,11 +101,23 @@ a <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+b.stats <- extract_stats(ggbetweenstats(
+  data = metalpha16s,
+  x = TreatmentAll,
+  y = ACE,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 b <- ggbetweenstats(
   data = metalpha16s,
   x = TreatmentAll,
@@ -132,11 +127,23 @@ b <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+c.stats <- extract_stats(ggbetweenstats(
+  data = metalpha16s,
+  x = TreatmentAll,
+  y = Shannon,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 c <- ggbetweenstats(
   data = metalpha16s,
   x = TreatmentAll,
@@ -146,11 +153,23 @@ c <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+d.stats <- extract_stats(ggbetweenstats(
+  data = metalpha16s,
+  x = TreatmentAll,
+  y = Simpson,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 d <- ggbetweenstats(
   data = metalpha16s,
   x = TreatmentAll,
@@ -160,18 +179,26 @@ d <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
 ggarrange(a, b, c, d, nrow=2, ncol=2, labels=c("a)", "b)", "c)", "d)"))
 
-cor.test(metalpha16s$Observed, metalpha16s$pH, method = "spearman")
-cor.test(metalpha16s$ACE, metalpha16s$pH, method = "spearman")
-cor.test(metalpha16s$Shannon, metalpha16s$pH, method = "spearman")
-cor.test(metalpha16s$Simpson, metalpha16s$pH, method = "spearman")
-
+#FigureS2
+a.stats <- extract_stats(ggscatterstats(
+  data = metalpha16s,
+  x = pH,
+  y = Observed,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 a <- ggscatterstats(
   data = metalpha16s,
   x = pH,
@@ -182,8 +209,17 @@ a <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+b.stats <- extract_stats(ggscatterstats(
+  data = metalpha16s,
+  x = pH,
+  y = ACE,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 b <- ggscatterstats(
   data = metalpha16s,
   x = pH,
@@ -194,8 +230,17 @@ b <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+c.stats <- extract_stats(ggscatterstats(
+  data = metalpha16s,
+  x = pH,
+  y = Shannon,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 c <- ggscatterstats(
   data = metalpha16s,
   x = pH,
@@ -206,8 +251,17 @@ c <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+d.stats <- extract_stats(ggscatterstats(
+  data = metalpha16s,
+  x = pH,
+  y = Simpson,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 d <- ggscatterstats(
   data = metalpha16s,
   x = pH,
@@ -218,8 +272,11 @@ d <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
 ggarrange(a, b, c, d, nrow=2, ncol=2, labels=c("a)", "b)", "c)", "d)"))
 
 rm(list=ls())
@@ -231,37 +288,13 @@ alphaITS <- estimate_richness(psITS.deseq, measures = c("Observed", "ACE", "Shan
                                                         "Simpson"))
 metalphaITS <- cbind(psITS.deseq@sam_data, alphaITS)
 
-richness.test <- kruskal.test(metalphaITS$Observed~metalphaITS$TreatmentAll)
-summary(aov(metalphaITS$Observed~metalphaITS$TreatmentAll))
-shannon.test <- kruskal.test(metalphaITS$Shannon~metalphaITS$TreatmentAll)
-summary(aov(metalphaITS$Shannon~metalphaITS$TreatmentAll))
-simpson.test <- kruskal.test(metalphaITS$Simpson~metalphaITS$TreatmentAll)
-summary(aov(metalphaITS$Simpson~metalphaITS$TreatmentAll))
-ace1.test <- kruskal.test(metalphaITS$ACE~metalphaITS$TreatmentAll)
-summary(aov(metalphaITS$ACE~metalphaITS$TreatmentAll))
-pvalues <- matrix(NA, nrow=4, ncol=2)
-colnames(pvalues) <- c("Indice", "pvalue")
-pvalues[1,1] <- "richness"
-pvalues[1,2] <- richness.test$p.value
-pvalues[2,1] <- "shannon"
-pvalues[2,2] <- shannon.test$p.value
-pvalues[3,1] <- "simpson"
-pvalues[3,2] <- simpson.test$p.value
-pvalues[4,1] <- "ace1"
-pvalues[4,2] <- ace1.test$p.value
-padjust <- p.adjust(as.numeric(pvalues[,"pvalue"]), method="BH")
-pvalues <- cbind(pvalues, padjust)
-pvalues
-
-dunnTest(metalphaITS$Observed~metalphaITS$TreatmentAll, method = "bh")
-boxplot(metalphaITS$Observed~metalphaITS$TreatmentAl)
-dunnTest(metalphaITS$ACE~metalphaITS$TreatmentAll, method = "bh")
-boxplot(metalphaITS$ACE~metalphaITS$TreatmentAl)
-dunnTest(metalphaITS$Shannon~metalphaITS$TreatmentAll, method = "bh")
-boxplot(metalphaITS$Shannon~metalphaITS$TreatmentAl)
-dunnTest(metalphaITS$Simpson~metalphaITS$TreatmentAll, method = "bh")
-boxplot(metalphaITS$Simpson~metalphaITS$TreatmentAl)
-
+#Figure2
+a.stats <- extract_stats(ggbetweenstats(
+  data = metalphaITS,
+  x = TreatmentAll,
+  y = Observed,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 a <- ggbetweenstats(
   data = metalphaITS,
   x = TreatmentAll,
@@ -271,11 +304,23 @@ a <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+b.stats <- extract_stats(ggbetweenstats(
+  data = metalphaITS,
+  x = TreatmentAll,
+  y = ACE,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 b <- ggbetweenstats(
   data = metalphaITS,
   x = TreatmentAll,
@@ -285,11 +330,23 @@ b <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+c.stats <- extract_stats(ggbetweenstats(
+  data = metalphaITS,
+  x = TreatmentAll,
+  y = Shannon,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 c <- ggbetweenstats(
   data = metalphaITS,
   x = TreatmentAll,
@@ -299,11 +356,23 @@ c <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+d.stats <- extract_stats(ggbetweenstats(
+  data = metalphaITS,
+  x = TreatmentAll,
+  y = Simpson,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 d <- ggbetweenstats(
   data = metalphaITS,
   x = TreatmentAll,
@@ -313,71 +382,110 @@ d <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0)
-)
+  violin.args = list(width = 0.5, alpha = 0),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
 ggarrange(a, b, c, d, nrow=2, ncol=2, labels=c("a)", "b)", "c)", "d)"))
 
-cor.test(metalphaITS$Observed, metalphaITS$pH, method = "spearman")
-cor.test(metalphaITS$ACE, metalphaITS$pH, method = "spearman")
-cor.test(metalphaITS$Shannon, metalphaITS$pH, method = "spearman")
-cor.test(metalphaITS$Simpson, metalphaITS$pH, method = "spearman")
-
+#FigureS3
+a.stats <- extract_stats(ggscatterstats(
+  data = metalphaITS,
+  x = pH,
+  y = Observed,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 a <- ggscatterstats(
   data = metalphaITS,
   x = pH,
   y = Observed,
   type = "nonparametric",
   p.adjust.method = "BH",
-  xlab = "Treatment",
+  xlab = "pH",
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+b.stats <- extract_stats(ggscatterstats(
+  data = metalphaITS,
+  x = pH,
+  y = ACE,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 b <- ggscatterstats(
   data = metalphaITS,
   x = pH,
   y = ACE,
   type = "nonparametric",
   p.adjust.method = "BH",
-  xlab = "Treatment",
+  xlab = "pH",
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+c.stats <- extract_stats(ggscatterstats(
+  data = metalphaITS,
+  x = pH,
+  y = Shannon,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 c <- ggscatterstats(
   data = metalphaITS,
   x = pH,
   y = Shannon,
   type = "nonparametric",
   p.adjust.method = "BH",
-  xlab = "Treatment",
+  xlab = "pH",
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+d.stats <- extract_stats(ggscatterstats(
+  data = metalphaITS,
+  x = pH,
+  y = Simpson,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 d <- ggscatterstats(
   data = metalphaITS,
   x = pH,
   y = Simpson,
   type = "nonparametric",
   p.adjust.method = "BH",
-  xlab = "Treatment",
+  xlab = "pH",
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic()
+  ggtheme = theme_classic(base_size = 16),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
 ggarrange(a, b, c, d, nrow=2, ncol=2, labels=c("a)", "b)", "c)", "d)"))
 
 rm(list=ls())
 dev.off()
 
+#FigureS4
 #16S Beta Diversity
 ps16s.deseq <- readRDS("16S.OTU.deseq.RDS")
 ps16s.deseq@sam_data$Day <- as.factor(ps16s.deseq@sam_data$Day)
@@ -390,23 +498,10 @@ pairwise.adonis(ps16s.bdiver, ps16s.deseq@sam_data$TreatmentAll, p.adjust.m = "B
 x <- "MDS"
 p1 <- plot_ordination(ps16s.deseq, ordinate(ps16s.deseq, method = x), color = "TreatmentAll", shape = "Day") +
   scale_color_aaas() +
-  geom_point(size=3) +
-  theme_classic() +
-  theme(aspect.ratio=1) +
+  geom_point(size=5) +
+  theme_classic(base_size = 16) +
   guides(color=guide_legend(title="Treatment"))
 p1
-x <- "PCoA"
-p1.2 <- plot_ordination(ps16s.deseq, ordinate(ps16s.deseq, method = x), 
-                      color = "TreatmentAll") +
-  scale_color_aaas() +
-  geom_point(size=3) +
-  theme_classic(base_size = 16) +
-  theme(aspect.ratio=1) +
-  guides(color=guide_legend(title="Treatment"))
-p1.2 <- p1.2  + 
-  stat_ellipse(type = "norm", linetype = 2) +
-  stat_ellipse(type = "t")
-p1.2
 
 #ITS Beta Diversity
 psITS.deseq <- readRDS("ITS.OTU.DESeq.RDS")
@@ -424,25 +519,12 @@ pairwise.adonis(psITS.bdiver, psITS.deseq@sam_data$TreatmentAll, p.adjust.m = "B
 x <- "MDS"
 p2 <- plot_ordination(psITS.deseq, ordinate(psITS.deseq, method = x), color = "TreatmentAll", shape = "Day") +
   scale_color_aaas() +
-  geom_point(size=3) +
-  theme_classic() +
-  theme(aspect.ratio=1) +
+  geom_point(size=5) +
+  theme_classic(base_size = 16) +
   guides(color=guide_legend(title="Treatment"))
 p2
-x <- "PCoA"
-p2.2 <- plot_ordination(psITS.deseq, ordinate(psITS.deseq, method = x), color = "TreatmentAll") +
-  scale_color_aaas() +
-  geom_point(size=3) +
-  theme_classic(base_size = 16) +
-  theme(aspect.ratio=1) +
-  guides(color=guide_legend(title="Treatment"))
-p2.2 <- p2.2  + 
-  stat_ellipse(type = "norm", linetype = 2) +
-  stat_ellipse(type = "t")
-p2.2
 
-ggarrange(p1, p2, ncol=2, labels=c("a)", "b)"), vjust = 11)
-ggarrange(p1.2, p2.2, ncol=2, labels=c("a)", "b)"), vjust = 11)
+ggarrange(p1, p2, ncol=2, nrow = 1, labels=c("a)", "b)"))
 
 rm(list=ls())
 dev.off()
@@ -517,12 +599,14 @@ dev.off()
 
 #SEM
 SEM_Datafile_OA <- read_excel("SEM_Datafile_OA.xlsx")
-EnzymeTreat <- data.frame(cbind(SampleID=SEM_Datafile_OA$Sample, Treatment=SEM_Datafile_OA$Treatment, 
-                                BG=SEM_Datafile_OA$BG, AP=SEM_Datafile_OA$AP, NAG=SEM_Datafile_OA$NAG, 
-                                LAP=SEM_Datafile_OA$LAP, BX=SEM_Datafile_OA$BX))
-EnzymeTreat.long <- melt(EnzymeTreat, id.vars = c("SampleID", "Treatment"))
 
-#Difference
+#Figure3
+a.stats <- extract_stats(ggbetweenstats(
+  data = SEM_Datafile_OA,
+  x = Treatment,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 a <- ggbetweenstats(
   data = SEM_Datafile_OA,
   x = Treatment,
@@ -532,12 +616,24 @@ a <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
-  ylab = "Alkaline phosphatase"
-) + theme(plot.subtitle = element_text(size = 9))
+  ylab = "Alkaline phosphatase",
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+b.stats <- extract_stats(ggbetweenstats(
+  data = SEM_Datafile_OA,
+  x = Treatment,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 b <- ggbetweenstats(
   data = SEM_Datafile_OA,
   x = Treatment,
@@ -547,12 +643,24 @@ b <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
-  ylab = expression(paste(Beta, "-glucosidase"))
-) + theme(plot.subtitle = element_text(size = 9))
+  ylab = expression(paste(Beta, "-glucosidase")),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+c.stats <- extract_stats(ggbetweenstats(
+  data = SEM_Datafile_OA,
+  x = Treatment,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 c <- ggbetweenstats(
   data = SEM_Datafile_OA,
   x = Treatment,
@@ -562,12 +670,24 @@ c <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
-  ylab = expression(paste(Beta, "-xylosidase"))
-) + theme(plot.subtitle = element_text(size = 9))
+  ylab = expression(paste(Beta, "-xylosidase")),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+d.stats <- extract_stats(ggbetweenstats(
+  data = SEM_Datafile_OA,
+  x = Treatment,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 d <- ggbetweenstats(
   data = SEM_Datafile_OA,
   x = Treatment,
@@ -577,12 +697,24 @@ d <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
-  ylab = "Leucine aminopeptidase"
-) + theme(plot.subtitle = element_text(size = 9))
+  ylab = "Leucine aminopeptidase",
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
+
+e.stats <- extract_stats(ggbetweenstats(
+  data = SEM_Datafile_OA,
+  x = Treatment,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$pairwise_comparisons_data
 e <- ggbetweenstats(
   data = SEM_Datafile_OA,
   x = Treatment,
@@ -592,179 +724,39 @@ e <- ggbetweenstats(
   xlab = "Treatment",
   palette = "default_aaas",
   package = "ggsci",
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   k = 4,
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
-  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide"))
-) + theme(plot.subtitle = element_text(size = 9))
+  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
+  results.subtitle = FALSE,
+  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  centrality.plotting = FALSE
+) + theme(axis.title.y.right = element_blank(), 
+          axis.text.y.right = element_blank(), 
+          axis.ticks.y.right = element_blank())
 
 ggarrange(a, b, c,
           d, e, ncol=3, nrow=2, align = "hv")
-
-#Correlation
-a <- ggscatterstats(
-  data = SEM_Datafile_OA,
-  x = pH,
-  y = AP,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  palette = "default_aaas",
-  package = "ggsci",
-  k = 4,
-  ggtheme = theme_classic(),
-  ylab = "Alkaline phosphatase",
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
-)
-b <- ggscatterstats(
-  data = SEM_Datafile_OA,
-  x = pH,
-  y = BG,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  palette = "default_aaas",
-  package = "ggsci",
-  k = 4,
-  ggtheme = theme_classic(),
-  ylab = expression(paste(Beta, "-glucosidase")),
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
-)
-c <- ggscatterstats(
-  data = SEM_Datafile_OA,
-  x = pH,
-  y = BX,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  palette = "default_aaas",
-  package = "ggsci",
-  k = 4,
-  ggtheme = theme_classic(),
-  ylab = expression(paste(Beta, "-xylosidase")),
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
-)
-d <- ggscatterstats(
-  data = SEM_Datafile_OA,
-  x = pH,
-  y = LAP,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  palette = "default_aaas",
-  package = "ggsci",
-  k = 4,
-  ggtheme = theme_classic(),
-  ylab = "Leucine aminopeptidase",
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
-)
-e <- ggscatterstats(
-  data = SEM_Datafile_OA,
-  x = pH,
-  y = NAG,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  palette = "default_aaas",
-  package = "ggsci",
-  k = 4,
-  ggtheme = theme_classic(),
-  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
-)
-
-ggarrange(a, b, c, d, e, ncol=3, nrow=2)
 
 rm(list=ls())
 dev.off()
 
+#Correlation
 #ByDay
+
 SEM_Datafile_OA <- read_excel("SEM_Datafile_OA.xlsx")
 unique(SEM_Datafile_OA$Day)
-#Change SEM_Datafile_OA$Day== to view other days
-day <- subset(SEM_Datafile_OA, SEM_Datafile_OA$Day=="21")
 
-a <- ggbetweenstats(
+#Day0
+#FigureS6
+day <- subset(SEM_Datafile_OA, SEM_Datafile_OA$Day=="0")
+a.stats <- extract_stats(ggscatterstats(
   data = day,
-  x = Treatment,
+  x = pH,
   y = AP,
   type = "nonparametric",
-  p.adjust.method = "BH",
-  xlab = "Treatment",
-  palette = "default_aaas",
-  package = "ggsci",
-  ggtheme = theme_classic(),
-  k = 4,
-  point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0),
-  ylab = "Alkaline phosphatase"
-) + theme(plot.subtitle = element_text(size = 9))
-b <- ggbetweenstats(
-  data = day,
-  x = Treatment,
-  y = BG,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  xlab = "Treatment",
-  palette = "default_aaas",
-  package = "ggsci",
-  ggtheme = theme_classic(),
-  k = 4,
-  point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0),
-  ylab = expression(paste(Beta, "-glucosidase"))
-) + theme(plot.subtitle = element_text(size = 9))
-c <- ggbetweenstats(
-  data = day,
-  x = Treatment,
-  y = BX,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  xlab = "Treatment",
-  palette = "default_aaas",
-  package = "ggsci",
-  ggtheme = theme_classic(),
-  k = 4,
-  point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0),
-  ylab = expression(paste(Beta, "-xylosidase"))
-) + theme(plot.subtitle = element_text(size = 9))
-d <- ggbetweenstats(
-  data = day,
-  x = Treatment,
-  y = LAP,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  xlab = "Treatment",
-  palette = "default_aaas",
-  package = "ggsci",
-  ggtheme = theme_classic(),
-  k = 4,
-  point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0),
-  ylab = "Leucine aminopeptidase"
-) + theme(plot.subtitle = element_text(size = 9))
-e <- ggbetweenstats(
-  data = day,
-  x = Treatment,
-  y = NAG,
-  type = "nonparametric",
-  p.adjust.method = "BH",
-  xlab = "Treatment",
-  palette = "default_aaas",
-  package = "ggsci",
-  ggtheme = theme_classic(),
-  k = 4,
-  point.args = list(alpha = 1, size = 3),
-  violin.args = list(width = 0.5, alpha = 0),
-  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide"))
-) + theme(plot.subtitle = element_text(size = 9))
-
-ggarrange(a, b, c,
-          d, e, ncol=3, nrow=2, align = "hv")
-
-#Correlation
+  p.adjust.method = "BH"))$subtitle_data
 a <- ggscatterstats(
   data = day,
   x = pH,
@@ -774,11 +766,18 @@ a <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   ylab = "Alkaline phosphatase",
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+b.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 b <- ggscatterstats(
   data = day,
   x = pH,
@@ -788,11 +787,18 @@ b <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   ylab = expression(paste(Beta, "-glucosidase")),
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+c.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 c <- ggscatterstats(
   data = day,
   x = pH,
@@ -802,11 +808,18 @@ c <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   ylab = expression(paste(Beta, "-xylosidase")),
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+d.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 d <- ggscatterstats(
   data = day,
   x = pH,
@@ -816,11 +829,18 @@ d <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   ylab = "Leucine aminopeptidase",
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
+  results.subtitle = FALSE,
+  margin = FALSE
 )
+
+e.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
 e <- ggscatterstats(
   data = day,
   x = pH,
@@ -830,10 +850,340 @@ e <- ggscatterstats(
   palette = "default_aaas",
   package = "ggsci",
   k = 4,
-  ggtheme = theme_classic(),
+  ggtheme = theme_classic(base_size = 16),
   ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
-  ggstatsplot.layer = FALSE,
-  ggplot.component = list(theme(text = element_text(size = 9)))
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+
+#Day7
+#FigureS7
+day <- subset(SEM_Datafile_OA, SEM_Datafile_OA$Day=="7")
+a.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+a <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = "Alkaline phosphatase",
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+b.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+b <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste(Beta, "-glucosidase")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+c.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+c <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste(Beta, "-xylosidase")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+d.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+d <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = "Leucine aminopeptidase",
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+e.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+e <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+
+#Day14
+#FigureS8
+day <- subset(SEM_Datafile_OA, SEM_Datafile_OA$Day=="14")
+a.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+a <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = "Alkaline phosphatase",
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+b.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+b <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste(Beta, "-glucosidase")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+c.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+c <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste(Beta, "-xylosidase")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+d.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+d <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = "Leucine aminopeptidase",
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+e.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+e <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+
+#Day21
+#FigureS9
+day <- subset(SEM_Datafile_OA, SEM_Datafile_OA$Day=="21")
+a.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+a <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = AP,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = "Alkaline phosphatase",
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+b.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+b <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = BG,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste(Beta, "-glucosidase")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+c.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+c <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = BX,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste(Beta, "-xylosidase")),
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+d.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+d <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = LAP,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = "Leucine aminopeptidase",
+  results.subtitle = FALSE,
+  margin = FALSE
+)
+
+e.stats <- extract_stats(ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH"))$subtitle_data
+e <- ggscatterstats(
+  data = day,
+  x = pH,
+  y = NAG,
+  type = "nonparametric",
+  p.adjust.method = "BH",
+  palette = "default_aaas",
+  package = "ggsci",
+  k = 4,
+  ggtheme = theme_classic(base_size = 16),
+  ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
+  results.subtitle = FALSE,
+  margin = FALSE
 )
 
 ggarrange(a, b, c, d, e, ncol=3, nrow=2)
@@ -842,7 +1192,7 @@ rm(list=ls())
 dev.off()
 
 #Network Robustness
-
+#Figure4
 library(igraph)
 library(brainGraph)
 library(DescTools)
