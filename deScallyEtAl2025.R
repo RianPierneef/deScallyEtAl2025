@@ -84,6 +84,8 @@ ps16s.deseq <- readRDS("16S.OTU.DESeq.RDS")
 alpha16s <- estimate_richness(ps16s.deseq, measures = c("Observed", "ACE", "Shannon", 
                                                         "Simpson"))
 metalpha16s <- cbind(ps16s.deseq@sam_data, alpha16s)
+metalpha16s$TreatmentAll <- factor(metalpha16s$TreatmentAll, 
+                                   levels = c("Control", "Medium", "Low"))
 
 #Figure1
 a.stats <- extract_stats(ggbetweenstats(
@@ -106,7 +108,7 @@ a <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -132,7 +134,7 @@ b <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -158,7 +160,7 @@ c <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -184,7 +186,7 @@ d <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -287,6 +289,8 @@ psITS.deseq <- readRDS("ITS.OTU.DESeq.RDS")
 alphaITS <- estimate_richness(psITS.deseq, measures = c("Observed", "ACE", "Shannon", 
                                                         "Simpson"))
 metalphaITS <- cbind(psITS.deseq@sam_data, alphaITS)
+metalphaITS$TreatmentAll <- factor(metalphaITS$TreatmentAll, 
+                                   levels = c("Control", "Medium", "Low"))
 
 #Figure2
 a.stats <- extract_stats(ggbetweenstats(
@@ -309,7 +313,7 @@ a <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -335,7 +339,7 @@ b <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -361,7 +365,7 @@ c <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -387,7 +391,7 @@ d <- ggbetweenstats(
   point.args = list(alpha = 1, size = 3),
   violin.args = list(width = 0.5, alpha = 0),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -489,7 +493,8 @@ dev.off()
 #16S Beta Diversity
 ps16s.deseq <- readRDS("16S.OTU.deseq.RDS")
 ps16s.deseq@sam_data$Day <- as.factor(ps16s.deseq@sam_data$Day)
-
+ps16s.deseq@sam_data$TreatmentAll <- factor(ps16s.deseq@sam_data$TreatmentAll, 
+                                   levels = c("Control", "Medium", "Low"))
 ps16s.bdiver <- betadiver(ps16s.deseq@otu_table, "z")
 ps16s.bdispr <- betadisper(ps16s.bdiver, ps16s.deseq@sam_data$TreatmentAll)
 anova(ps16s.bdispr)
@@ -510,7 +515,8 @@ psITS.deseq@sam_data$Day <- as.factor(c("0", "7", "14", "21", "14", "0", "7", "1
                                         "14", "21", "0", "7", "14", "21", "0", "7",
                                         "14", "21", "0", "7", "14", "21"))
 psITS.deseq@sam_data$Day <- factor(psITS.deseq@sam_data$Day, levels = c("0", "7", "14", "21"))
-
+psITS.deseq@sam_data$TreatmentAll <- factor(psITS.deseq@sam_data$TreatmentAll, 
+                                            levels = c("Control", "Medium", "Low"))
 psITS.bdiver <- betadiver(psITS.deseq@otu_table, "z")
 psITS.bdispr <- betadisper(psITS.bdiver, psITS.deseq@sam_data$TreatmentAll)
 anova(psITS.bdispr)
@@ -554,7 +560,7 @@ control.phyla <- control.phyla[order(-control.phyla$`Relative Abundance (%)`),]
 low.phyla <- low.phyla[order(-low.phyla$`Relative Abundance (%)`),]
 medium.phyla <- medium.phyla[order(-medium.phyla$`Relative Abundance (%)`),]
 res.phyla <- rbind(control.phyla, low.phyla, medium.phyla)
-
+res.phyla$Treatment <- factor(res.phyla$Treatment, levels = c("Control", "Medium", "Low"))
 p1 <- ggplot(res.phyla, aes(fill=Phylum, y=`Relative Abundance (%)`, x=Treatment)) + 
   geom_bar(position="stack", stat="identity") +
   theme_classic()+
@@ -586,11 +592,12 @@ control.phyla <- control.phyla[order(-control.phyla$`Relative Abundance (%)`),]
 low.phyla <- low.phyla[order(-low.phyla$`Relative Abundance (%)`),]
 medium.phyla <- medium.phyla[order(-medium.phyla$`Relative Abundance (%)`),]
 res.phyla <- rbind(control.phyla, low.phyla, medium.phyla)
-
+res.phyla$Treatment <- factor(res.phyla$Treatment, levels = c("Control", "Medium", "Low"))
 p2 <- ggplot(res.phyla, aes(fill=Phylum, y=`Relative Abundance (%)`, x=Treatment)) + 
   geom_bar(position="stack", stat="identity") +
   theme_classic()+
   scale_fill_igv()
+p2
 
 ggarrange(p1, p2, ncol=2, labels=c("a)", "b)"))
 
@@ -599,6 +606,7 @@ dev.off()
 
 #SEM
 SEM_Datafile_OA <- read_excel("SEM_Datafile_OA.xlsx")
+SEM_Datafile_OA$Treatment <- factor(SEM_Datafile_OA$Treatment, levels = c("Control", "Medium", "Low"))
 
 #Figure3
 a.stats <- extract_stats(ggbetweenstats(
@@ -622,7 +630,7 @@ a <- ggbetweenstats(
   violin.args = list(width = 0.5, alpha = 0),
   ylab = "Alkaline phosphatase",
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -649,7 +657,7 @@ b <- ggbetweenstats(
   violin.args = list(width = 0.5, alpha = 0),
   ylab = expression(paste(Beta, "-glucosidase")),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -676,7 +684,7 @@ c <- ggbetweenstats(
   violin.args = list(width = 0.5, alpha = 0),
   ylab = expression(paste(Beta, "-xylosidase")),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -703,7 +711,7 @@ d <- ggbetweenstats(
   violin.args = list(width = 0.5, alpha = 0),
   ylab = "Leucine aminopeptidase",
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
@@ -730,14 +738,14 @@ e <- ggbetweenstats(
   violin.args = list(width = 0.5, alpha = 0),
   ylab = expression(paste("N-acetyl-", Beta, "-D-glucosaminide")),
   results.subtitle = FALSE,
-  ggsignif.args = list(textsize = 0.1, size = 0.8),
+  ggsignif.args = list(textsize = 0.1, size = 0.8, step_increase = 0.1),
   centrality.plotting = FALSE
 ) + theme(axis.title.y.right = element_blank(), 
           axis.text.y.right = element_blank(), 
           axis.ticks.y.right = element_blank())
 
 ggarrange(a, b, c,
-          d, e, ncol=3, nrow=2, align = "hv")
+          d, e, ncol=3, nrow=2, align = "hv", labels=c("a)", "b)", "c)", "d)", "e)"))
 
 rm(list=ls())
 dev.off()
@@ -856,7 +864,7 @@ e <- ggscatterstats(
   margin = FALSE
 )
 
-ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+ggarrange(a, b, c, d, e, ncol=3, nrow=2, labels=c("a)", "b)", "c)", "d)", "e)"))
 
 #Day7
 #FigureS7
@@ -966,7 +974,7 @@ e <- ggscatterstats(
   margin = FALSE
 )
 
-ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+ggarrange(a, b, c, d, e, ncol=3, nrow=2, labels=c("a)", "b)", "c)", "d)", "e)"))
 
 #Day14
 #FigureS8
@@ -1076,7 +1084,7 @@ e <- ggscatterstats(
   margin = FALSE
 )
 
-ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+ggarrange(a, b, c, d, e, ncol=3, nrow=2, labels=c("a)", "b)", "c)", "d)", "e)"))
 
 #Day21
 #FigureS9
@@ -1186,7 +1194,7 @@ e <- ggscatterstats(
   margin = FALSE
 )
 
-ggarrange(a, b, c, d, e, ncol=3, nrow=2)
+ggarrange(a, b, c, d, e, ncol=3, nrow=2, labels=c("a)", "b)", "c)", "d)", "e)"))
 
 rm(list=ls())
 dev.off()
@@ -1263,6 +1271,7 @@ S16aucStats[3,2] <- AUC(x = con.rob$removed.pct, y = con.rob$comp.pct)
 con.rob$Treatment <- c(rep("Control", nrow(con.rob)))
 
 rob <- rbind(low.rob, med.rob, con.rob)
+rob$Treatment <- factor(rob$Treatment, levels = c("Control", "Medium", "Low"))
 
 S16aucGraph <- ggplot(data=rob,
                       aes(x=removed.pct, y=comp.pct, colour = Treatment)) +
@@ -1276,6 +1285,7 @@ S16aucGraph <- ggplot(data=rob,
 
 S16aucGraph
 
+S16aucStats$Treatment <- factor(S16aucStats$Treatment, levels = c("Control", "Medium", "Low"))
 S16aucStatsGraph <- ggplot(S16aucStats, aes(y=AUC, x=Treatment, fill=Treatment)) + 
   geom_bar(stat='identity', position='dodge') +
   theme_classic(base_size = 14) +
@@ -1353,6 +1363,7 @@ ITSaucStats[3,2] <- AUC(x = con.rob$removed.pct, y = con.rob$comp.pct)
 con.rob$Treatment <- c(rep("Control", nrow(con.rob)))
 
 rob <- rbind(low.rob, med.rob, con.rob)
+rob$Treatment <- factor(rob$Treatment, levels = c("Control", "Medium", "Low"))
 
 ITSaucGraph <- ggplot(data=rob,
                       aes(x=removed.pct, y=comp.pct, colour = Treatment)) +
@@ -1366,6 +1377,7 @@ ITSaucGraph <- ggplot(data=rob,
 
 ITSaucGraph
 
+ITSaucStats$Treatment <- factor(ITSaucStats$Treatment, levels = c("Control", "Medium", "Low"))
 ITSaucStatsGraph <- ggplot(ITSaucStats, aes(y=AUC, x=Treatment, fill=Treatment)) + 
   geom_bar(stat='identity', position='dodge') +
   theme_classic(base_size = 14) +
